@@ -3,7 +3,7 @@ use bevy::gizmos::gizmos;
 use bevy::prelude::*;
 use bevy::math::*;
 use avian3d::prelude::*;
-
+use crate::env::Bar;
 
 pub struct PenPlugin;
 impl Plugin for PenPlugin {
@@ -26,9 +26,6 @@ impl Plugin for PenPlugin {
 // ---
 
 #[derive(Component)]
-pub struct  Bar;
-
-#[derive(Component)]
 pub struct  Arm;
 
 #[derive(Component)]
@@ -41,9 +38,6 @@ pub struct  Ball;
 pub struct  Pivot;
 
 #[derive(Component)]
-pub struct  Grab;
-
-#[derive(Component)]
 pub struct  SlingEnd;
 
 
@@ -54,13 +48,9 @@ pub enum PState {
     Tension,
     Arming,
     Loose,
-    
 }
 
-
-
 // ---
-
 
 fn startup(
     mut cmd: Commands,
@@ -188,7 +178,7 @@ fn startup(
     // --- ENDING --------------------------------------------------------------------
 
     let ending_radius = 0.5;
-    let is_sphere = false;
+    let is_sphere = true;
 
     let (mesh, collider) = if is_sphere {
         (meshes.add(Sphere::new(ending_radius)), Collider::sphere(ending_radius))
@@ -219,22 +209,6 @@ fn startup(
         .with_compliance(0.)
         
     );
-    
-    // --- BAR ----------------------------------------------------------------------
-
-    let bar_dim = Vec3::new(8., 1., 40.);
-    cmd.spawn((
-        MaterialMeshBundle {
-            transform: Transform::from_xyz(0., -10., 0.),
-            material: mh.clone(),
-            mesh: meshes.add(Cuboid::from_size(bar_dim)),
-            ..default()
-        },
-        Bar,
-        RigidBody::Static,
-        Collider::cuboid(bar_dim.x, bar_dim.y, bar_dim.z),
-        Dominance(10)
-    ));
 
 }
 

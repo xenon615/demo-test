@@ -1,9 +1,11 @@
 use bevy::prelude::*;
 use avian3d::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
-// mod balance;
 mod camera;
+mod env;
+mod balance;
 mod pendulum;
+mod e1;
 fn main() {
     App::new()
     .insert_resource(ClearColor(Color::BLACK))
@@ -13,8 +15,10 @@ fn main() {
         PhysicsPlugins::default(), 
         PhysicsDebugPlugin::default(),
         camera::CameraPlugin,
+        env::EnvPlugin,
         // balance::BPlugin,
-        pendulum::PenPlugin,
+        // pendulum::PenPlugin,
+        e1::E1Plugin,
         WorldInspectorPlugin::new()
     ))
     .run();
