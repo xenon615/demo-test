@@ -61,167 +61,150 @@ fn startup(
     mut cmd: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut meshes: ResMut<Assets<Mesh>>,
+    assets: ResMut<AssetServer>,
 ) {
     let mh = materials.add(Color::WHITE);
 
-    cmd.spawn((
-        TransformBundle::from_transform(
-            Transform::from_xyz(0., 0., 0.)
-            .with_rotation(Quat::from_rotation_y(-PI / 4.))
-        ),
-        VisibilityBundle::default(),
-        Name::new("Trebuchet")
+    // --- ARM -----
+
+    let arm_dim = Vec3::new(1., 1., 15.);
+    
+    let mut arm_force = ExternalForce::default();
+    arm_force.apply_force_at_point(Vec3::ZERO, Vec3::NEG_Z * arm_dim.z / 2., Vec3::ZERO);
+
+    let arm_id = cmd.spawn((
+        MaterialMeshBundle {
+            material: mh.clone(),
+            mesh: meshes.add(Cuboid::from_size(arm_dim)),
+            ..default()
+        },
+        RigidBody::Dynamic,
+        // RigidBody::Static,
+        MassPropertiesBundle::new_computed(&Collider::cuboid(arm_dim.x, arm_dim.y, arm_dim.z), 1.),
+        GravityScale(0.1),
+        arm_force,
+        Arm
     ))
-    .with_children(|tpc|{
 
-        // --- ARM -----
-
-        let arm_dim = Vec3::new(1., 1., 15.);
-            
-        let mut arm_force = ExternalForce::default();
-        arm_force.apply_force_at_point(Vec3::ZERO, Vec3::NEG_Z * arm_dim.z / 2., Vec3::ZERO);
-
-        let arm_id = tpc.spawn((
-            MaterialMeshBundle {
-                material: mh.clone(),
-                mesh: meshes.add(Cuboid::from_size(arm_dim)),
+    .with_children(|arm| {
+        arm.spawn((
+            TransformBundle {
+                local: Transform::from_translation(Vec3::NEG_Z * arm_dim.z / 2.),
                 ..default()
             },
-            RigidBody::Dynamic,
-            // RigidBody::Static,
-            MassPropertiesBundle::new_computed(&Collider::cuboid(arm_dim.x, arm_dim.y, arm_dim.z), 1.),
-            GravityScale(0.1),
-            arm_force,
-            Arm
-        ))
+            ArmLongEnd,
+        ));
+    })
 
-        .with_children(|arm| {
-            arm.spawn((
-                TransformBundle {
-                    local: Transform::from_translation(Vec3::NEG_Z * arm_dim.z / 2.),
-                    ..default()
-                },
-                ArmLongEnd,
-            ));
-        })
-
-        .id();
+    .id();
 
     // --- PIVOT -----------
 
-        let pivot_offset = arm_dim.z  * 0.3;
-        let pivot_id = tpc.spawn((
-            TransformBundle {
-                local: Transform::from_translation(Vec3::Z * pivot_offset),
-                ..default()
-            },
-            RigidBody::Static,
-        )).id();
+    let pivot_offset = arm_dim.z  * 0.3;
+    let pivot_id = cmd.spawn((
+        TransformBundle {
+            local: Transform::from_translation(Vec3::Z * pivot_offset),
+            ..default()
+        },
+        RigidBody::Static,
+    )).id();
 
-        tpc.spawn((
-            RevoluteJoint::new(pivot_id, arm_id)
-            .with_local_anchor_2(Vec3::Z * pivot_offset)
-            .with_aligned_axis(Vec3::X)
-            .with_angular_velocity_damping(10000.1),
-            Pivot,
-            Name::new("Pivot")
-        ));
+    cmd.spawn((
+        RevoluteJoint::new(pivot_id, arm_id)
+        .with_local_anchor_2(Vec3::Z * pivot_offset)
+        .with_aligned_axis(Vec3::X)
+        .with_angular_velocity_damping(10000.1),
+        Pivot,
+        Name::new("Pivot")
+    ));
+    
+    // --- COUNTERWEIGHT -------------------------
 
-        // --- COUNTERWEIGHT -------------------------
+    let cw_radius = 2.;
+    let anchor_arm = Vec3::Z * arm_dim.z / 2.;
+    let anchor_cw =  Vec3::Z * (2. * cw_radius);
 
-        let cw_radius = 2.;
-        let anchor_arm = Vec3::Z * arm_dim.z / 2.;
-        let anchor_cw =  Vec3::Z * (2. * cw_radius);
+    let cw_id = cmd.spawn((
+        MaterialMeshBundle {
+            transform: Transform::from_translation(anchor_cw + anchor_arm),
+            material: mh.clone(),
+            mesh: meshes.add(Sphere::new(cw_radius)),
+            ..default()
+        },
+        RigidBody::Dynamic,
+        MassPropertiesBundle::new_computed(&Collider::sphere(cw_radius), 1.),
+        GravityScale(10.),
+    )).id();
 
-        let cw_id = tpc.spawn((
+    cmd.spawn(
+        RevoluteJoint::new(arm_id, cw_id)
+        .with_aligned_axis(Vec3::X)
+        .with_local_anchor_1(anchor_arm)
+        .with_local_anchor_2(-anchor_cw)
+        .with_angle_limits(-PI, PI)
+    );
+    
+    // --- SLING ---------------------------
+
+    let sling_len = arm_dim.z * 0.8;
+    let element_count = 16;
+    let element_dim = Vec3::new(0.1, 0.1, sling_len / element_count as f32);
+    let anchor_element = Vec3::Z * element_dim.z / 2.;
+    let element_mesh = meshes.add(Cuboid::from_size(element_dim));
+    let mut pos = -anchor_arm - anchor_element; 
+    let mut prev_element_id = arm_id;
+
+    for i in 0 .. element_count {
+        let element_id = cmd.spawn((
             MaterialMeshBundle {
-                transform: Transform::from_translation(anchor_cw + anchor_arm),
+                transform: Transform::from_translation(pos),
                 material: mh.clone(),
-                mesh: meshes.add(Sphere::new(cw_radius)),
+                mesh: element_mesh.clone(),
                 ..default()
             },
+            // RigidBody::Static,
             RigidBody::Dynamic,
-            MassPropertiesBundle::new_computed(&Collider::sphere(cw_radius), 1.),
-            GravityScale(10.),
+            MassPropertiesBundle::new_computed(&Collider::cuboid(element_dim.x, element_dim.y, element_dim.z), 10.),
         )).id();
 
-        tpc.spawn(
-            RevoluteJoint::new(arm_id, cw_id)
+        cmd.spawn(
+            RevoluteJoint::new(prev_element_id, element_id)
+            .with_local_anchor_1(if i == 0 {-anchor_arm} else {-anchor_element})
+            .with_local_anchor_2(anchor_element)
             .with_aligned_axis(Vec3::X)
-            .with_local_anchor_1(anchor_arm)
-            .with_local_anchor_2(-anchor_cw)
-            .with_angle_limits(-PI, PI)
+            .with_compliance(0.000000)
         );
-
-        // --- SLING ---------------------------
-
-        let sling_len = arm_dim.z * 0.8;
-        let element_count = 4;
-        let element_dim = Vec3::new(0.1, 0.1, sling_len / element_count as f32);
-        let anchor_element = Vec3::Z * element_dim.z / 2.;
-        let element_mesh = meshes.add(Cuboid::from_size(element_dim));
-        let mut pos = -anchor_arm - anchor_element; 
-        let mut prev_element_id = arm_id;
-
-        for i in 0 .. element_count {
-            let element_id = tpc.spawn((
-                MaterialMeshBundle {
-                    transform: Transform::from_translation(pos),
-                    material: mh.clone(),
-                    mesh: element_mesh.clone(),
-                    ..default()
-                },
-                // RigidBody::Static,
-                RigidBody::Dynamic,
-                MassPropertiesBundle::new_computed(&Collider::cuboid(element_dim.x, element_dim.y, element_dim.z), 10.),
-            )).id();
-
-            tpc.spawn(
-                RevoluteJoint::new(prev_element_id, element_id)
-                .with_local_anchor_1(if i == 0 {-anchor_arm} else {-anchor_element})
-                .with_local_anchor_2(anchor_element)
-                .with_aligned_axis(Vec3::X)
-                .with_compliance(0.000000)
-            );
-            prev_element_id  = element_id;
-            pos += -2. * anchor_element;
-        }
-
-
-
-        // --- ENDING --------------------------------------------------------------------
-
-        let ending_radius = 0.1;
-        let ending_id = tpc.spawn((
-            MaterialMeshBundle {
-                transform: Transform::from_translation(pos - anchor_element - Vec3::Z * ending_radius),
-                mesh: meshes.add(Sphere::new(ending_radius)),
-                material: mh.clone(),
-                ..default()
-            }, 
-            RigidBody::Dynamic,
-            Restitution::new(0.).with_combine_rule(CoefficientCombine::Min),
-            Friction::new(0.).with_combine_rule(CoefficientCombine::Min),
-            Collider::sphere(ending_radius),
-            SlingEnd
-        ))
-        .id()
-        ;
-        tpc.spawn((
-            RevoluteJoint::new(prev_element_id, ending_id)
-            .with_aligned_axis(Vec3::X)
-            .with_local_anchor_1(-anchor_element)
-            .with_compliance(0.),
-        ));
-
-
-
-
-    });
+        prev_element_id  = element_id;
+        pos += -2. * anchor_element;
+    }
+    
     
 
-
+    // --- ENDING --------------------------------------------------------------------
     
+    let ending_radius = 0.1;
+    let ending_id = cmd.spawn((
+        MaterialMeshBundle {
+            transform: Transform::from_translation(pos - anchor_element - Vec3::Z * ending_radius),
+            mesh: meshes.add(Sphere::new(ending_radius)),
+            material: mh.clone(),
+            ..default()
+        }, 
+        RigidBody::Dynamic,
+        Restitution::new(0.).with_combine_rule(CoefficientCombine::Min),
+        Friction::new(0.).with_combine_rule(CoefficientCombine::Min),
+        Collider::sphere(ending_radius),
+        SlingEnd
+    ))
+    .id()
+    ;
+    cmd.spawn((
+        RevoluteJoint::new(prev_element_id, ending_id)
+        .with_aligned_axis(Vec3::X)
+        .with_local_anchor_1(-anchor_element)
+        .with_compliance(0.),
+    ));
+
 }
 
 // ---

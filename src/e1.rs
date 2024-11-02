@@ -98,9 +98,15 @@ fn startup(
     let is_sphere = true;
 
     let (mesh, collider) = if is_sphere {
-        (meshes.add(Sphere::new(ball_radius)), Collider::sphere(ball_radius))
+        (
+            meshes.add(Sphere::new(ball_radius)), 
+            Collider::sphere(ball_radius)
+        )
     } else {
-        (meshes.add(Cuboid::from_length(2. * ball_radius)), Collider::cuboid(ball_radius * 2. , ball_radius * 2., ball_radius * 2.))
+        (
+            meshes.add(Cuboid::from_length(2. * ball_radius)),
+            Collider::cuboid(ball_radius * 2. , ball_radius * 2., ball_radius * 2.)
+        )
     };
 
     let ball_id = cmd.spawn((

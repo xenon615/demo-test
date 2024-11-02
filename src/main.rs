@@ -6,6 +6,7 @@ mod env;
 mod balance;
 mod pendulum;
 mod e1;
+mod e2;
 fn main() {
     App::new()
     .insert_resource(ClearColor(Color::BLACK))
@@ -15,10 +16,11 @@ fn main() {
         PhysicsPlugins::default(), 
         PhysicsDebugPlugin::default(),
         camera::CameraPlugin,
-        env::EnvPlugin,
+        // env::EnvPlugin,
         // balance::BPlugin,
         // pendulum::PenPlugin,
-        e1::E1Plugin,
+        // e1::E1Plugin,
+        e2::E2Plugin,
         WorldInspectorPlugin::new()
     ))
     .run();
