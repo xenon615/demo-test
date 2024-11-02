@@ -16,7 +16,7 @@ fn main() {
         PhysicsPlugins::default(), 
         PhysicsDebugPlugin::default(),
         camera::CameraPlugin,
-        // env::EnvPlugin,
+        env::EnvPlugin,
         // balance::BPlugin,
         // pendulum::PenPlugin,
         // e1::E1Plugin,

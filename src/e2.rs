@@ -47,7 +47,6 @@ fn startup(
             MaterialMeshBundle {
                 material: materials.add(Color::srgb(1., 0., 0.)),
                 mesh: meshes.add(Sphere::new(0.5)),
-                transform: Transform::from_rotation(Quat::from_rotation_y(PI / 4.)),
                 ..default()
             },
             RigidBody::Static
