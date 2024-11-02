@@ -33,20 +33,29 @@ fn startup(
     let mh = materials.add(Color::WHITE);
 
     cmd.spawn((
-        TransformBundle::from_transform(
-            Transform::from_xyz(0., 0., 0.)
-            // .with_rotation(Quat::from_rotation_y(PI / 4.))
-        ),
-        VisibilityBundle::default(),
+        MaterialMeshBundle {
+            material: materials.add(Color::srgba(0., 0., 1., 0.1)),
+            mesh: meshes.add(Cuboid::from_length(20.)),
+            transform: Transform::from_rotation(Quat::from_rotation_y(PI / 3.)),
+            ..default()
+        },
         Name::new("Parent"),
         Main
     ))
     .with_children(|base| {
-        let base_id = base.spawn(RigidBody::Static).id();
+        let base_id = base.spawn((
+            MaterialMeshBundle {
+                material: materials.add(Color::srgb(1., 0., 0.)),
+                mesh: meshes.add(Sphere::new(0.5)),
+                transform: Transform::from_rotation(Quat::from_rotation_y(PI / 4.)),
+                ..default()
+            },
+            RigidBody::Static
+        )).id();
 
         // ---CHAIN
 
-        let element_count = 15;
+        let element_count = 10;
         let element_dim = Vec3::new(0.1, 0.1, 1.);
         let element_anchor = Vec3::Z * element_dim.z * 0.5;
         let element_mesh = meshes.add(Cuboid::from_size(element_dim));
