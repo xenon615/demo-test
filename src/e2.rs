@@ -10,6 +10,7 @@ impl Plugin for E2Plugin {
         app
         .add_systems(Startup, startup)
         .add_systems(Update, show_gizmos)
+        // .add_systems(Update, key)
         ;
     }
 }
@@ -18,6 +19,9 @@ impl Plugin for E2Plugin {
 
 #[derive(Component)]
 pub struct Main;
+
+#[derive(Component)]
+pub struct Element;
 
 // ---
 
@@ -31,7 +35,7 @@ fn startup(
     cmd.spawn((
         TransformBundle::from_transform(
             Transform::from_xyz(0., 0., 0.)
-            .with_rotation(Quat::from_rotation_y(-PI / 4.))
+            // .with_rotation(Quat::from_rotation_y(PI / 4.))
         ),
         VisibilityBundle::default(),
         Name::new("Parent"),
@@ -46,8 +50,7 @@ fn startup(
         let element_dim = Vec3::new(0.1, 0.1, 1.);
         let element_anchor = Vec3::Z * element_dim.z * 0.5;
         let element_mesh = meshes.add(Cuboid::from_size(element_dim));
-
-        let mut pos = -Vec3::Z * element_dim.z * 0.5;     
+        let mut pos = -element_anchor;
         let mut prev_element_id = base_id;
 
         for i in 0 .. element_count {
@@ -60,6 +63,8 @@ fn startup(
                     ..default()
                 },
                 RigidBody::Dynamic,
+                // RigidBody::Static,
+                Element,
                 MassPropertiesBundle::new_computed(&Collider::cuboid(element_dim.x, element_dim.y, element_dim.z), 10.),
             )).id();
     
@@ -87,14 +92,13 @@ fn startup(
             }, 
             RigidBody::Dynamic,
             collider,
-            ColliderDensity(200.),
+            ColliderDensity(0.1),
         ))
         .id()
         ;
     
         base.spawn(
-            RevoluteJoint::new(prev_element_id, ball_id)
-            .with_aligned_axis(Vec3::X)
+            SphericalJoint::new(prev_element_id, ball_id)
             .with_local_anchor_1(-element_anchor)
         );
 
@@ -112,3 +116,14 @@ fn show_gizmos(
         gizmos.axes(*t, 5.);    
     }
 }
+
+// fn key(
+//     keys: Res<ButtonInput<KeyCode>>,
+//     mut q: Query<&mut RigidBody, With<Element>>
+// ) {
+//     for mut r in &mut q  {
+//         if keys.just_pressed(KeyCode::Space) {
+//             *r = RigidBody::Dynamic;
+//         }
+//     }
+// }
