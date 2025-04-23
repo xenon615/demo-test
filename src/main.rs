@@ -30,9 +30,12 @@ fn startup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut c_materials: ResMut<Assets<CustomMaterial>>,
-    mut al: ResMut<AmbientLight>
 ) {
-    al.brightness = 50.;
+    cmd.spawn((
+        Mesh3d(meshes.add(Sphere::new(0.5))),
+        MeshMaterial3d(materials.add(Color::srgb(1., 0., 0.))),
+        Transform::from_xyz(-2., 0., 0.)
+    ));
 
     cmd.spawn((
         Mesh3d(meshes.add(Cuboid::from_length(1.))),
@@ -41,18 +44,7 @@ fn startup(
     ));
 
     cmd.spawn((
-        Mesh3d(meshes.add(Sphere::new(0.5))),
-        MeshMaterial3d(materials.add(Color::srgb(1., 0., 0.))),
-        Transform::from_xyz(-2., 0., 0.)
-    ));
-
-
-    cmd.spawn((
         Camera3d::default(),
-        Camera {
-            hdr: true,
-            ..default()
-        },
         Transform::from_xyz(0., 0., 10.).looking_at(Vec3::ZERO, Vec3::Y)
     ));
 
