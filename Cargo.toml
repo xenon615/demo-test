@@ -13,8 +13,8 @@ codegen-units = 1
 
 [dependencies.bevy]
 git = "https://github.com/bevyengine/bevy.git"
-# tag = "v0.16.0-rc.5"
 rev = "12f71a8" 
+# tag = "v0.16.0-rc.5"
 # branch = "master"
 # version = "0.15.3"
 default-features = true

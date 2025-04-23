@@ -4,6 +4,7 @@ use bevy::{
     render::render_resource::{ShaderRef, AsBindGroup}
 };
 
+// ---
 
 fn main() {
     App::new()
