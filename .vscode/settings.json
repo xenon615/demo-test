@@ -1,0 +1,31 @@
+{
+    "wgsl-analyzer.customImports": {
+        "bevy_pbr::forward_io": "https://raw.githubusercontent.com/bevyengine/bevy/refs/heads/main/crates/bevy_pbr/src/render/forward_io.wgsl",
+        // "bevy_pbr::forward_io":"file://E:\\dev\\sources\\rust\\bevy\\_releases\\bevy-main\\crates\\bevy_pbr\\src\\render\\forward_io.wgsl"
+        // "bevy_pbr::forward_io":"file://E:/dev/sources/rust/bevy/_releases/bevy-main/crates/bevy_pbr/src/render/forward_io.wgsl"
+    },
+     "wgsl-analyzer.diagnostics.typeErrors": true,
+    "wgsl-analyzer.diagnostics.nagaParsingErrors": true,
+    "wgsl-analyzer.diagnostics.nagaValidationErrors": true,
+    "wgsl-analyzer.diagnostics.nagaVersion": "0.22",
+    "wgsl-analyzer.diagnostics.previewNagaOutput": true,
+    "wgsl-analyzer.diagnostics.useNagaErrorCode": true,
+    "wgsl-analyzer.diagnostics.experimental.enable": true,
+    "wgsl-analyzer.diagnostics.styleLints.enable": true,
+    "wgsl-analyzer.inlayHints.structLayoutHints": true,
+    "wgsl-analyzer.inlayHints.typeVerbosity": "full",
+    "wgsl-analyzer.initializeStopped": false,
+    "wgsl-analyzer.restartServerOnConfigChange": true,
+    "wgsl-analyzer.showSyntaxTree": true,
+    "wgsl-analyzer.trace.server": "messages",
+    "wgsl-analyzer.completion.fullFunctionSignatures.enable": true,
+    "wgsl-analyzer.inlayHints.bindingModeHints.enable": true,
+    "wgsl-analyzer.imports.prefixExternPrelude": true,
+    "wgsl-analyzer.imports.prefix": "self",
+    "wgsl-analyzer.inlayHints.genericParameterHints.lifetime.enable": true,
+    "wgsl-analyzer.inlayHints.genericParameterHints.type.enable": true,
+    "wgsl-analyzer.inlayHints.implicitDrops.enable": true,
+    "wgsl-analyzer.inlayHints.lifetimeElisionHints.enable": "always",
+    "wgsl-analyzer.workspace.symbol.search.scope": "workspace_and_dependencies",
+
+}

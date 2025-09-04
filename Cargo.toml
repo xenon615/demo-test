@@ -11,9 +11,15 @@ opt-level = 3
 [profile.release]
 codegen-units = 1
 
+[dependencies]
+bevy_panorbit_camera = "0.28"
+bevy_egui = "0.36.0"
+bevy-inspector-egui = "0.33.1"
+
 [dependencies.bevy]
-git = "https://github.com/bevyengine/bevy.git"
-rev = "12f71a8" 
+version = "0.16.1"
+# git = "https://github.com/bevyengine/bevy.git"
+# rev = "12f71a8" 
 # tag = "v0.16.0-rc.5"
 # branch = "master"
 # version = "0.15.3"
